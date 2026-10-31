@@ -1,0 +1,1107 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SENTINELA | Monitoramento</title>
+
+  <style>
+    :root {
+      --bg: #0c0a14;
+      --panel: #171323;
+      --panel2: #211a32;
+      --purple: #a78bfa;
+      --purple2: #7c3aed;
+      --text: #f5f3ff;
+      --muted: #aaa3bd;
+      --green: #4ade80;
+      --yellow: #facc15;
+      --red: #fb7185;
+      --border: #342847;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    header {
+      padding: 28px 6%;
+      border-bottom: 1px solid var(--border);
+      background: #110d1c;
+    }
+
+    .brand {
+      color: var(--purple);
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 4px;
+    }
+
+    h1 {
+      margin: 10px 0;
+      font-size: clamp(28px, 5vw, 42px);
+    }
+
+    header p, .muted {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: auto;
+      padding: 28px 5%;
+    }
+
+    .topbar, .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .topbar {
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .panel {
+      padding: 22px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin-bottom: 18px;
+      min-width: 0;
+    }
+
+    .panel h2 {
+      margin-top: 0;
+      font-size: 17px;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .value {
+      margin: 12px 0 6px;
+      font-size: clamp(28px, 4vw, 38px);
+      font-weight: bold;
+      overflow-wrap: anywhere;
+    }
+
+    .unit {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    button {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      background: var(--panel2);
+      color: var(--text);
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      border-color: var(--purple);
+    }
+
+    button.primary {
+      color: #120d20;
+      background: var(--purple);
+      border-color: var(--purple);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 12px;
+      background: var(--panel2);
+      border-radius: 30px;
+      font-size: 13px;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+
+    .dot.green { background: var(--green); }
+    .dot.yellow { background: var(--yellow); }
+    .dot.red { background: var(--red); }
+
+    .status-normal { color: var(--green); }
+    .status-tilted { color: var(--yellow); }
+    .status-error { color: var(--red); }
+
+    .status-value {
+      margin: 12px 0;
+      font-size: 25px;
+      font-weight: bold;
+    }
+
+    .progress {
+      width: 100%;
+      height: 6px;
+      background: #30273f;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 15px 0;
+    }
+
+    .progress div {
+      height: 100%;
+      width: 0%;
+      background: var(--purple);
+      transition: width 0.15s;
+    }
+
+    canvas {
+      width: 100%;
+      height: 260px;
+      display: block;
+    }
+
+    .event-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      max-height: 230px;
+      overflow-y: auto;
+    }
+
+    .event-list li {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .event-list li:last-child {
+      border-bottom: 0;
+    }
+
+    .event-time {
+      color: var(--purple);
+      margin-right: 8px;
+    }
+
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    footer {
+      text-align: center;
+      padding: 25px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 700px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar .status {
+        justify-self: start;
+      }
+
+      main {
+        padding: 20px 4%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="brand">SISTEMA DE MONITORAMENTO</div>
+    <h1>SENTINELA</h1>
+    <p>
+      Monitoramento de movimento, análise de inclinação
+      e identificação de alterações do sensor.
+    </p>
+
+    <div class="status">
+      <span class="dot" id="connectionDot"></span>
+      <span id="connectionText">USB desconectado</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="topbar">
+      <div>
+        <h2>Central de monitoramento</h2>
+        <div class="muted" id="lastUpdate">
+          Aguardando conexão com a MannaNauta.
+        </div>
+      </div>
+
+      <div class="buttons">
+        <button class="primary" id="connectButton">
+          Conectar USB
+        </button>
+        <button id="disconnectButton" disabled>
+          Desconectar
+        </button>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <div class="label">Aceleração X</div>
+        <div class="value" id="valueX">--</div>
+        <div class="unit">m/s² ou unidade enviada pelo firmware</div>
+      </article>
+
+      <article class="panel">
+        <div class="label">Aceleração Y</div>
+        <div class="value" id="valueY">--</div>
+        <div class="unit">m/s² ou unidade enviada pelo firmware</div>
+      </article>
+
+      <article class="panel">
+        <div class="label">Aceleração Z</div>
+        <div class="value" id="valueZ">--</div>
+        <div class="unit">m/s² ou unidade enviada pelo firmware</div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <div class="label">Ângulo X</div>
+        <div class="value" id="angleX">--°</div>
+        <div class="unit">Referência inicial descontada</div>
+      </article>
+
+      <article class="panel">
+        <div class="label">Ângulo Y</div>
+        <div class="value" id="angleY">--°</div>
+        <div class="unit">Referência inicial descontada</div>
+      </article>
+
+      <article class="panel">
+        <div class="label">Estado do sensor</div>
+        <div class="status-value" id="sensorStatus">Aguardando</div>
+        <div class="muted" id="statusDescription">
+          Conecte o dispositivo para iniciar.
+        </div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>Calibração e sensibilidade</h2>
+      <p class="muted">
+        Coloque o sensor na posição que será considerada normal.
+        Aguarde a leitura estabilizar e calibre.
+      </p>
+
+      <div class="label">Desvio em relação à referência</div>
+      <div class="value" id="deviationValue">--°</div>
+
+      <div class="progress">
+        <div id="deviationBar"></div>
+      </div>
+
+      <div class="buttons">
+        <button class="primary" id="calibrateButton" disabled>
+          Calibrar posição atual
+        </button>
+        <button id="resetButton" disabled>
+          Reiniciar referência
+        </button>
+      </div>
+
+      <p class="small" id="calibrationInfo">
+        A referência será definida após a conexão e poderá ser recalibrada.
+      </p>
+
+      <p class="small">
+        A tolerância padrão é de 15°. A calibração define a posição
+        normal; não verifica se a superfície está perfeitamente nivelada.
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>Gráfico do acelerômetro</h2>
+      <p class="muted">
+        Histórico das últimas 100 leituras recebidas.
+      </p>
+      <canvas id="sensorChart"></canvas>
+      <div class="small">
+        <span style="color:#a78bfa">● X</span>
+        &nbsp;&nbsp;
+        <span style="color:#60a5fa">● Y</span>
+        &nbsp;&nbsp;
+        <span style="color:#4ade80">● Z</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Histórico de eventos</h2>
+      <p class="muted">
+        Registro de conexões, calibrações e mudanças de estado.
+      </p>
+
+      <ul class="event-list" id="eventList">
+        <li>Aguardando os primeiros eventos.</li>
+      </ul>
+
+      <div class="buttons">
+        <button id="clearHistoryButton">Limpar histórico</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    SENTINELA · Protótipo educacional de monitoramento
+  </footer>
+
+  <script>
+    // ==========================================
+    // CONFIGURAÇÕES
+    // ==========================================
+
+    const BAUD_RATE = 115200;
+    const GRAPH_POINTS = 100;
+
+    // Pequenas oscilações são suavizadas pelo filtro.
+    const FILTER_FACTOR = 0.20;
+
+    // Desvio angular necessário para acusar inclinação.
+    const TILT_THRESHOLD = 15;
+
+    // Margem para evitar alternância rápida do estado.
+    const RETURN_THRESHOLD = 10;
+
+    // Número de leituras usadas na calibração.
+    const CALIBRATION_SAMPLES = 20;
+
+    // ==========================================
+    // ELEMENTOS DA PÁGINA
+    // ==========================================
+
+    const $ = id => document.getElementById(id);
+
+    const connectButton = $("connectButton");
+    const disconnectButton = $("disconnectButton");
+    const calibrateButton = $("calibrateButton");
+    const resetButton = $("resetButton");
+
+    let port = null;
+    let reader = null;
+    let keepReading = false;
+    let readTask = null;
+
+    let rawX = null;
+    let rawY = null;
+    let rawZ = null;
+
+    let filteredX = null;
+    let filteredY = null;
+    let filteredZ = null;
+
+    let angleX = null;
+    let angleY = null;
+
+    let referenceX = null;
+    let referenceY = null;
+
+    let calibrationBuffer = [];
+    let calibrationPending = false;
+
+    let sensorState = "WAITING";
+    let hasReceivedData = false;
+
+    let historyX = [];
+    let historyY = [];
+    let historyZ = [];
+
+    let lastUpdateTime = null;
+
+    // ==========================================
+    // REGISTRO DE EVENTOS
+    // ==========================================
+
+    function addEvent(message) {
+      const list = $("eventList");
+
+      if (
+        list.children.length === 1 &&
+        list.children[0].textContent.includes("Aguardando")
+      ) {
+        list.innerHTML = "";
+      }
+
+      const item = document.createElement("li");
+      const time = document.createElement("span");
+
+      time.className = "event-time";
+      time.textContent = new Date().toLocaleTimeString("pt-BR");
+
+      item.appendChild(time);
+      item.appendChild(document.createTextNode(message));
+
+      list.prepend(item);
+
+      while (list.children.length > 50) {
+        list.removeChild(list.lastChild);
+      }
+    }
+
+    // ==========================================
+    // ESTADO DA CONEXÃO
+    // ==========================================
+
+    function setConnectionStatus(connected, message) {
+      $("connectionText").textContent = message;
+
+      $("connectionDot").className =
+        "dot" + (connected ? " green" : "");
+
+      connectButton.disabled = connected;
+      disconnectButton.disabled = !connected;
+
+      calibrateButton.disabled = !connected || !hasReceivedData;
+      resetButton.disabled = !connected || referenceX === null;
+    }
+
+    function setSensorState(state, description) {
+      if (sensorState !== state) {
+        sensorState = state;
+
+        if (state === "NORMAL") {
+          addEvent("Estado NORMAL: dentro da tolerância.");
+        } else if (state === "TILTED") {
+          addEvent("ATENÇÃO: desvio de inclinação detectado.");
+        }
+      }
+
+      const status = $("sensorStatus");
+
+      status.textContent =
+        state === "NORMAL" ? "NORMAL" :
+        state === "TILTED" ? "INCLINADO" :
+        state === "WAITING" ? "Aguardando" :
+        "Sem referência";
+
+      status.className =
+        "status-value " +
+        (state === "NORMAL" ? "status-normal" :
+         state === "TILTED" ? "status-tilted" : "");
+
+      $("statusDescription").textContent = description;
+    }
+
+    // ==========================================
+    // SUAVIZAÇÃO DAS LEITURAS
+    // ==========================================
+
+    function lowPass(previous, current) {
+      if (previous === null) {
+        return current;
+      }
+
+      return previous +
+        FILTER_FACTOR * (current - previous);
+    }
+
+    // ==========================================
+    // CÁLCULO DOS ÂNGULOS
+    // ==========================================
+
+    function calculateAngles(x, y, z) {
+      // Fórmulas baseadas na aceleração medida nos três eixos.
+      // Funcionam como estimativa de inclinação quando o sensor
+      // está parado ou se move lentamente.
+
+      const xAngle =
+        Math.atan2(y, Math.sqrt(x * x + z * z)) *
+        180 / Math.PI;
+
+      const yAngle =
+        Math.atan2(-x, Math.sqrt(y * y + z * z)) *
+        180 / Math.PI;
+
+      return {
+        x: xAngle,
+        y: yAngle
+      };
+    }
+
+    function angleDifference(a, b) {
+      // Diferença angular considerando a passagem de +180°/-180°.
+      return ((a - b + 540) % 360) - 180;
+    }
+
+    // ==========================================
+    // CALIBRAÇÃO
+    // ==========================================
+
+    function startCalibration() {
+      if (!hasReceivedData) {
+        addEvent("Não foi possível calibrar: sem leituras.");
+        return;
+      }
+
+      calibrationBuffer = [];
+      calibrationPending = true;
+
+      $("calibrationInfo").textContent =
+        "Calibrando... mantenha o sensor parado até concluir.";
+
+      calibrateButton.disabled = true;
+
+      addEvent("Calibração iniciada. Mantenha o sensor imóvel.");
+    }
+
+    function processCalibration() {
+      if (!calibrationPending || angleX === null || angleY === null) {
+        return;
+      }
+
+      calibrationBuffer.push({
+        x: angleX,
+        y: angleY
+      });
+
+      if (calibrationBuffer.length < CALIBRATION_SAMPLES) {
+        $("calibrationInfo").textContent =
+          `Calibrando: ${calibrationBuffer.length}/` +
+          `${CALIBRATION_SAMPLES} leituras.`;
+        return;
+      }
+
+      // Média das leituras para reduzir o efeito do ruído.
+      referenceX =
+        calibrationBuffer.reduce((sum, a) => sum + a.x, 0) /
+        calibrationBuffer.length;
+
+      referenceY =
+        calibrationBuffer.reduce((sum, a) => sum + a.y, 0) /
+        calibrationBuffer.length;
+
+      calibrationPending = false;
+      calibrationBuffer = [];
+
+      setSensorState(
+        "NORMAL",
+        "Referência definida. Aguardando alterações."
+      );
+
+      $("calibrationInfo").textContent =
+        "Calibração concluída. A posição atual é a referência normal.";
+
+      $("deviationValue").textContent = "0.0°";
+      $("deviationBar").style.width = "0%";
+
+      calibrateButton.disabled = false;
+      resetButton.disabled = false;
+
+      addEvent("Calibração concluída com média de 20 leituras.");
+    }
+
+    function resetReference() {
+      referenceX = null;
+      referenceY = null;
+      calibrationBuffer = [];
+      calibrationPending = false;
+
+      setSensorState(
+        "NO_REFERENCE",
+        "Calibre o sensor para monitorar desvios."
+      );
+
+      $("angleX").textContent = "--°";
+      $("angleY").textContent = "--°";
+      $("deviationValue").textContent = "--°";
+      $("deviationBar").style.width = "0%";
+
+      $("calibrationInfo").textContent =
+        "Referência apagada. Coloque o sensor na posição desejada e calibre.";
+
+      resetButton.disabled = true;
+
+      addEvent("Referência de inclinação reiniciada.");
+    }
+
+    // ==========================================
+    // CLASSIFICAÇÃO DA INCLINAÇÃO
+    // ==========================================
+
+    function updateTiltStatus() {
+      if (referenceX === null || referenceY === null) {
+        setSensorState(
+          "NO_REFERENCE",
+          "Calibre o sensor para comparar a posição atual."
+        );
+        return;
+      }
+
+      const deltaX = angleDifference(angleX, referenceX);
+      const deltaY = angleDifference(angleY, referenceY);
+
+      const deviation = Math.sqrt(
+        deltaX * deltaX + deltaY * deltaY
+      );
+
+      $("deviationValue").textContent =
+        deviation.toFixed(1) + "°";
+
+      $("deviationBar").style.width =
+        Math.min(100, (deviation / 45) * 100) + "%";
+
+      // Histerese:
+      // para entrar no estado inclinado, supera 15°;
+      // para voltar ao normal, precisa cair abaixo de 10°.
+      if (sensorState !== "TILTED") {
+        if (deviation > TILT_THRESHOLD) {
+          setSensorState(
+            "TILTED",
+            "O desvio ultrapassou o limite configurado."
+          );
+        } else {
+          setSensorState(
+            "NORMAL",
+            "Desvio dentro da tolerância configurada."
+          );
+        }
+      } else {
+        if (deviation < RETURN_THRESHOLD) {
+          setSensorState(
+            "NORMAL",
+            "O sensor retornou à faixa normal."
+          );
+        } else {
+          setSensorState(
+            "TILTED",
+            "Desvio acima da margem de retorno."
+          );
+        }
+      }
+    }
+
+    // ==========================================
+    // ATUALIZAÇÃO DOS DADOS
+    // ==========================================
+
+    function updateGraph() {
+      drawGraph();
+    }
+
+    function processReading(x, y, z) {
+      rawX = x;
+      rawY = y;
+      rawZ = z;
+
+      filteredX = lowPass(filteredX, x);
+      filteredY = lowPass(filteredY, y);
+      filteredZ = lowPass(filteredZ, z);
+
+      const angles = calculateAngles(
+        filteredX,
+        filteredY,
+        filteredZ
+      );
+
+      angleX = angles.x;
+      angleY = angles.y;
+
+      hasReceivedData = true;
+      lastUpdateTime = new Date();
+
+      $("valueX").textContent = filteredX.toFixed(2);
+      $("valueY").textContent = filteredY.toFixed(2);
+      $("valueZ").textContent = filteredZ.toFixed(2);
+
+      $("angleX").textContent = angleX.toFixed(1) + "°";
+      $("angleY").textContent = angleY.toFixed(1) + "°";
+
+      $("lastUpdate").textContent =
+        "Última leitura: " +
+        lastUpdateTime.toLocaleTimeString("pt-BR");
+
+      historyX.push(filteredX);
+      historyY.push(filteredY);
+      historyZ.push(filteredZ);
+
+      if (historyX.length > GRAPH_POINTS) historyX.shift();
+      if (historyY.length > GRAPH_POINTS) historyY.shift();
+      if (historyZ.length > GRAPH_POINTS) historyZ.shift();
+
+      processCalibration();
+
+      if (!calibrationPending) {
+        updateTiltStatus();
+      }
+
+      calibrateButton.disabled = false;
+      updateGraph();
+    }
+
+    // ==========================================
+    // INTERPRETAÇÃO DO TEXTO SERIAL
+    // ==========================================
+
+    function parseSerialLine(line) {
+      // Compatível com:
+      // x = -9.42 | y = -1.50 | Z = -1.36
+
+      const regex =
+        /x\s*=\s*(-?\d+(?:\.\d+)?)\s*\|\s*y\s*=\s*(-?\d+(?:\.\d+)?)\s*\|\s*z\s*=\s*(-?\d+(?:\.\d+)?)/i;
+
+      const match = line.match(regex);
+
+      if (!match) {
+        return false;
+      }
+
+      const x = Number(match[1]);
+      const y = Number(match[2]);
+      const z = Number(match[3]);
+
+      if (![x, y, z].every(Number.isFinite)) {
+        return false;
+      }
+
+      processReading(x, y, z);
+      return true;
+    }
+
+    // ==========================================
+    // CONEXÃO USB SERIAL
+    // ==========================================
+
+    async function connectSerial() {
+      if (!("serial" in navigator)) {
+        alert(
+          "Seu navegador não oferece Web Serial. " +
+          "Abra esta página no Chrome ou Edge atualizado, " +
+          "preferencialmente em localhost ou HTTPS."
+        );
+        return;
+      }
+
+      try {
+        port = await navigator.serial.requestPort();
+
+        await port.open({
+          baudRate: BAUD_RATE
+        });
+
+        keepReading = true;
+
+        setConnectionStatus(true, "USB conectado");
+        addEvent("Conexão USB estabelecida a 115200 baud.");
+
+        $("calibrationInfo").textContent =
+          "Mantenha o sensor na posição desejada e calibre quando as leituras chegarem.";
+
+        readTask = readSerialLoop();
+
+      } catch (error) {
+        console.error(error);
+
+        addEvent("Falha ao conectar: " + error.message);
+
+        setConnectionStatus(
+          false,
+          "Falha na conexão USB"
+        );
+
+        if (port) {
+          try {
+            await port.close();
+          } catch (_) {}
+        }
+
+        port = null;
+      }
+    }
+
+    async function readSerialLoop() {
+      let buffer = "";
+
+      try {
+        while (port && port.readable && keepReading) {
+          reader = port.readable.getReader();
+
+          try {
+            while (keepReading) {
+              const { value, done } = await reader.read();
+
+              if (done) {
+                break;
+              }
+
+              if (!value) {
+                continue;
+              }
+
+              buffer += new TextDecoder().decode(value);
+
+              // Evita acumular conteúdo indefinidamente se o formato
+              // enviado pelo firmware não tiver quebra de linha.
+              if (buffer.length > 4096) {
+                buffer = buffer.slice(-2048);
+              }
+
+              const lines = buffer.split(/\r?\n/);
+              buffer = lines.pop() || "";
+
+              for (const line of lines) {
+                parseSerialLine(line.trim());
+              }
+            }
+          } finally {
+            reader.releaseLock();
+            reader = null;
+          }
+        }
+      } catch (error) {
+        if (keepReading) {
+          console.error(error);
+          addEvent("Erro na leitura serial: " + error.message);
+        }
+      }
+    }
+
+    async function disconnectSerial() {
+      keepReading = false;
+
+      if (reader) {
+        try {
+          await reader.cancel();
+        } catch (_) {}
+      }
+
+      if (readTask) {
+        try {
+          await readTask;
+        } catch (_) {}
+      }
+
+      if (port) {
+        try {
+          await port.close();
+        } catch (error) {
+          console.warn("Não foi possível fechar a porta:", error);
+        }
+      }
+
+      port = null;
+      reader = null;
+      readTask = null;
+
+      setConnectionStatus(false, "USB desconectado");
+
+      addEvent("Dispositivo desconectado.");
+
+      setSensorState(
+        "WAITING",
+        "Conecte o dispositivo para retomar o monitoramento."
+      );
+    }
+
+    // ==========================================
+    // GRÁFICO
+    // ==========================================
+
+    function drawGraph() {
+      const canvas = $("sensorChart");
+      const rect = canvas.getBoundingClientRect();
+
+      if (rect.width === 0) {
+        return;
+      }
+
+      const dpr = window.devicePixelRatio || 1;
+
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(260 * dpr);
+
+      const ctx = canvas.getContext("2d");
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const width = rect.width;
+      const height = 260;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const padding = {
+        top: 15,
+        right: 12,
+        bottom: 25,
+        left: 38
+      };
+
+      const graphWidth = width - padding.left - padding.right;
+      const graphHeight = height - padding.top - padding.bottom;
+
+      const allValues = [
+        ...historyX,
+        ...historyY,
+        ...historyZ
+      ];
+
+      let min = -10;
+      let max = 10;
+
+      if (allValues.length) {
+        min = Math.min(min, ...allValues);
+        max = Math.max(max, ...allValues);
+
+        const margin = Math.max(1, (max - min) * 0.12);
+        min -= margin;
+        max += margin;
+      }
+
+      // Linhas horizontais da grade.
+      ctx.strokeStyle = "#342847";
+      ctx.lineWidth = 1;
+      ctx.fillStyle = "#aaa3bd";
+      ctx.font = "11px Arial";
+
+      for (let i = 0; i <= 4; i++) {
+        const y = padding.top + graphHeight * i / 4;
+
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(width - padding.right, y);
+        ctx.stroke();
+
+        const value = max - (max - min) * i / 4;
+
+        ctx.fillText(
+          value.toFixed(1),
+          2,
+          y + 4
+        );
+      }
+
+      function plot(values, color) {
+        if (values.length < 2) {
+          return;
+        }
+
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+
+        values.forEach((value, index) => {
+          const x = padding.left +
+            (index / (GRAPH_POINTS - 1)) * graphWidth;
+
+          const y = padding.top +
+            ((max - value) / (max - min)) * graphHeight;
+
+          if (index === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+        });
+
+        ctx.stroke();
+      }
+
+      plot(historyX, "#a78bfa");
+      plot(historyY, "#60a5fa");
+      plot(historyZ, "#4ade80");
+    }
+
+    // ==========================================
+    // BOTÕES E INICIALIZAÇÃO
+    // ==========================================
+
+    connectButton.addEventListener("click", connectSerial);
+
+    disconnectButton.addEventListener(
+      "click",
+      disconnectSerial
+    );
+
+    calibrateButton.addEventListener(
+      "click",
+      startCalibration
+    );
+
+    resetButton.addEventListener(
+      "click",
+      resetReference
+    );
+
+    $("clearHistoryButton").addEventListener("click", () => {
+      $("eventList").innerHTML = "";
+      addEvent("Histórico limpo.");
+    });
+
+    window.addEventListener("resize", drawGraph);
+
+    // Atualiza o estado se a porta for desconectada fisicamente.
+    if ("serial" in navigator) {
+      navigator.serial.addEventListener(
+        "disconnect",
+        event => {
+          if (port && event.target === port) {
+            disconnectSerial();
+            addEvent("A porta USB foi desconectada fisicamente.");
+          }
+        }
+      );
+    }
+
+    drawGraph();
+
+    setConnectionStatus(false, "USB desconectado");
+
+    setSensorState(
+      "WAITING",
+      "Conecte a MannaNauta para iniciar."
+    );
+  </script>
+</body>
+</html>
